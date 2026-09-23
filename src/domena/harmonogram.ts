@@ -14,7 +14,9 @@ export type TrybNadplaty = 'obnizRate' | 'skrocOkres';
 export interface Nadplata {
   /** Numer raty, po której zapłacie następuje nadpłata. */
   numerRaty: number;
+  /** Kwota nadpłaty w groszach (liczba całkowita dodatnia). */
   kwotaGr: number;
+  /** `obnizRate`: ta sama liczba rat, niższa rata; `skrocOkres`: ta sama rata, mniej rat. */
   tryb: TrybNadplaty;
 }
 
@@ -94,7 +96,10 @@ export function dataRaty(pierwszaRata: string, numer: number): string {
   return `${rokRaty}-${String(miesiacRaty).padStart(2, '0')}-${String(dzienRaty).padStart(2, '0')}`;
 }
 
-/** Stopa wskaźnika obowiązująca w danym dniu: ostatni wpis serii z `od <= data`. */
+/**
+ * Stopa wskaźnika obowiązująca w danym dniu: ostatni wpis serii z `od <= data`.
+ * Seria musi być uporządkowana rosnąco po `od`; dla danych z `dane/` pilnuje tego tests/smoke.test.ts.
+ */
 export function stopaWskaznikaNaDzien(seria: WpisSerii[], data: string): number {
   let obowiazujacy: WpisSerii | undefined;
   for (const wpis of seria) {
@@ -121,6 +126,9 @@ function sprawdzParametry(parametry: ParametryKredytu): void {
   }
   if (!Number.isFinite(parametry.marza) || parametry.marza < 0) {
     throw new BladParametrow('marża: ułamek nieujemny');
+  }
+  if (parametry.typRat !== 'rowne') {
+    throw new BladParametrow('typ rat: obsługiwane są na razie tylko raty równe');
   }
   rozbierzDate(parametry.pierwszaRata);
 }
