@@ -39,6 +39,12 @@ describe('raty malejące przy stałej stopie 5,66 %', () => {
     expect(harmonogram.sumaOdsetekGr).toBeLessThan(rowne.sumaOdsetekGr);
   });
 
+  it('jedna rata malejąca: cały kapitał i odsetki za miesiąc (1 886,67 zł)', () => {
+    const jedna = policzHarmonogram({ ...PARAMETRY, liczbaRat: 1 }, SERIA_STALA);
+    expect(jedna.raty).toHaveLength(1);
+    expect(jedna.raty[0]).toMatchObject({ czescKapitalowaGr: 400_000_00, czescOdsetkowaGr: 188667, rataGr: 401_886_67 });
+  });
+
   it('zmiana wskaźnika zmienia odsetki, a nie część kapitałową', () => {
     const zmienny = policzHarmonogram(PARAMETRY, [
       { od: '2000-01-01', stopa: 0.06 },
