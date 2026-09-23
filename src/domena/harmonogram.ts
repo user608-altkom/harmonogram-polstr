@@ -127,8 +127,8 @@ function sprawdzParametry(parametry: ParametryKredytu): void {
   if (!Number.isFinite(parametry.marza) || parametry.marza < 0) {
     throw new BladParametrow('marża: ułamek nieujemny');
   }
-  if (parametry.typRat !== 'rowne') {
-    throw new BladParametrow('typ rat: obsługiwane są na razie tylko raty równe');
+  if (parametry.typRat !== 'rowne' && parametry.typRat !== 'malejace') {
+    throw new BladParametrow('typ rat: rowne albo malejace');
   }
   rozbierzDate(parametry.pierwszaRata);
 }
@@ -153,20 +153,24 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
   // więc początkowe 0 w rataRownaGr nigdy nie trafia do wyniku.
   let wskaznikPoprzedniejRaty: number | undefined;
   let rataRownaGr = 0;
+  // Raty malejące: stała część kapitałowa, zmiana stopy wpływa tylko na odsetki.
+  const czescKapitalowaMalejacaGr = zaokraglijDoGrosza(parametry.kwotaGr / parametry.liczbaRat);
 
   for (let numer = 1; numer <= parametry.liczbaRat; numer++) {
     const dataWskaznika = dataRaty(parametry.pierwszaRata, numerRatyUstalajacejStope(parametry.wskaznik, numer));
     // Porównujemy wartość wprost z serii (bez arytmetyki), więc zmiana wpisu zawsze wymusza przeliczenie.
     const wartoscWskaznika = stopaWskaznikaNaDzien(seria, dataWskaznika);
     const stopaRoczna = wartoscWskaznika + parametry.marza;
-    if (wartoscWskaznika !== wskaznikPoprzedniejRaty) {
+    if (parametry.typRat === 'rowne' && wartoscWskaznika !== wskaznikPoprzedniejRaty) {
       rataRownaGr = rataAnnuitetowa(saldoGr, stopaRoczna, parametry.liczbaRat - numer + 1);
-      wskaznikPoprzedniejRaty = wartoscWskaznika;
     }
+    wskaznikPoprzedniejRaty = wartoscWskaznika;
 
     const czescOdsetkowaGr = zaokraglijDoGrosza((saldoGr * stopaRoczna) / MIESIECY_W_ROKU);
+    const planowanaCzescKapitalowaGr =
+      parametry.typRat === 'rowne' ? rataRownaGr - czescOdsetkowaGr : czescKapitalowaMalejacaGr;
     const ostatnia = numer === parametry.liczbaRat;
-    const czescKapitalowaGr = ostatnia ? saldoGr : Math.min(saldoGr, rataRownaGr - czescOdsetkowaGr);
+    const czescKapitalowaGr = ostatnia ? saldoGr : Math.min(saldoGr, planowanaCzescKapitalowaGr);
     saldoGr -= czescKapitalowaGr;
 
     raty.push({
