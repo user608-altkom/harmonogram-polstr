@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BladParametrow,
+  liczbaRatAnnuitetu,
   policzHarmonogram,
   rataAnnuitetowa,
   zaokraglijDoGrosza,
@@ -80,7 +81,16 @@ describe('nadpłaty przy ratach równych', () => {
       SERIA_STALA,
     );
     expect(harmonogram.raty).toHaveLength(12);
+    // Rata 12 jest zwykłą ratą (nie wyrównującą), a nadpłata spłaca resztę salda.
+    expect(harmonogram.raty[11]?.czescKapitalowaGr).toBe(bezNadplat.raty[11]?.czescKapitalowaGr);
+    expect(harmonogram.raty[11]?.nadplataGr).toBe(saldoPoDwunastej);
     sprawdzNiezmienniki(harmonogram);
+  });
+
+  it('nadpłata po ostatniej racie (saldo zero) → BladParametrow', () => {
+    expect(() =>
+      policzHarmonogram({ ...ROWNE, nadplaty: [nadplata('obnizRate', 1_00, 300)] }, SERIA_STALA),
+    ).toThrow(BladParametrow);
   });
 });
 
@@ -100,6 +110,18 @@ describe('nadpłaty przy ratach malejących', () => {
     // saldo 374 000,04 zł / 1 333,33 zł = 280,5 → 281 rat po nadpłacie
     expect(harmonogram.raty).toHaveLength(12 + 281);
     sprawdzNiezmienniki(harmonogram);
+  });
+});
+
+describe('liczbaRatAnnuitetu (skrócenie okresu)', () => {
+  it('liczba rat potrzebna do spłaty salda przy danej racie', () => {
+    expect(liczbaRatAnnuitetu(400_000_00, STOPA, 249472)).toBe(300);
+    expect(liczbaRatAnnuitetu(300_00, 0, 100_00)).toBe(3);
+    expect(liczbaRatAnnuitetu(0, STOPA, 249472)).toBe(0);
+  });
+
+  it('rata nie pokrywa odsetek → skrócenie niewykonalne (nieskończoność)', () => {
+    expect(liczbaRatAnnuitetu(400_000_00, STOPA, 1_000_00)).toBe(Number.POSITIVE_INFINITY);
   });
 });
 

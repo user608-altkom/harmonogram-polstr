@@ -14,6 +14,8 @@ import {
 const PRZYKLAD =
   '/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01';
 
+// Krótkie klucze `obniz` i `skroc` to format kontraktu query string (contracts/api-harmonogram.md),
+// mapowane na pełne nazwy domenowe `Nadplata['tryb']`.
 const TRYBY_NADPLATY: Record<string, Nadplata['tryb']> = { obniz: 'obnizRate', skroc: 'skrocOkres' };
 
 /** Parametr `nadplaty=12:10000:obniz,24:5000:skroc` (numer raty:kwota w złotych:tryb). */

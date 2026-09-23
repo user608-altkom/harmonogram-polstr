@@ -174,7 +174,7 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
   // Raty malejące: stała część kapitałowa, zmiana stopy wpływa tylko na odsetki.
   let czescKapitalowaMalejacaGr = zaokraglijDoGrosza(parametry.kwotaGr / parametry.liczbaRat);
   // Nadpłata w trybie „obniż ratę” wymusza przeliczenie raty przed kolejną ratą.
-  let obnizRate = false;
+  let wymusPrzeliczenieRaty = false;
 
   for (let numer = 1; numer <= planowanaLiczbaRat; numer++) {
     const pozostaleRaty = planowanaLiczbaRat - numer + 1;
@@ -182,14 +182,14 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
     // Porównujemy wartość wprost z serii (bez arytmetyki), więc zmiana wpisu zawsze wymusza przeliczenie.
     const wartoscWskaznika = stopaWskaznikaNaDzien(seria, dataWskaznika);
     const stopaRoczna = wartoscWskaznika + parametry.marza;
-    if (parametry.typRat === 'rowne' && (obnizRate || wartoscWskaznika !== wskaznikPoprzedniejRaty)) {
+    if (parametry.typRat === 'rowne' && (wymusPrzeliczenieRaty || wartoscWskaznika !== wskaznikPoprzedniejRaty)) {
       rataRownaGr = rataAnnuitetowa(saldoGr, stopaRoczna, pozostaleRaty);
     }
-    if (parametry.typRat === 'malejace' && obnizRate) {
+    if (parametry.typRat === 'malejace' && wymusPrzeliczenieRaty) {
       czescKapitalowaMalejacaGr = zaokraglijDoGrosza(saldoGr / pozostaleRaty);
     }
     wskaznikPoprzedniejRaty = wartoscWskaznika;
-    obnizRate = false;
+    wymusPrzeliczenieRaty = false;
 
     const czescOdsetkowaGr = zaokraglijDoGrosza((saldoGr * stopaRoczna) / MIESIECY_W_ROKU);
     const planowanaCzescKapitalowaGr =
@@ -207,7 +207,7 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
       saldoGr -= nadplata.kwotaGr;
       nadplataGr += nadplata.kwotaGr;
       if (nadplata.tryb === 'obnizRate') {
-        obnizRate = true;
+        wymusPrzeliczenieRaty = true;
       } else {
         const ratDoSplaty =
           parametry.typRat === 'rowne'
@@ -245,7 +245,7 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
  * Liczba rat annuitetowych potrzebnych do spłaty salda przy danej racie: ⌈−ln(1 − S·r/A) / ln(1 + r)⌉.
  * Tolerancja 1e-9 chroni przed dodatkową ratą z samego błędu zmiennoprzecinkowego.
  */
-function liczbaRatAnnuitetu(saldoGr: number, stopaRoczna: number, rataGr: number): number {
+export function liczbaRatAnnuitetu(saldoGr: number, stopaRoczna: number, rataGr: number): number {
   if (saldoGr === 0) return 0;
   const stopaMiesieczna = stopaRoczna / MIESIECY_W_ROKU;
   if (stopaMiesieczna === 0) return Math.ceil(saldoGr / rataGr);
