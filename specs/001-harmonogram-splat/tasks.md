@@ -141,8 +141,8 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 ## Faza 8: Porządki
 
-- [ ] T029 [P] Opisać użycie API i ekranu w README.md
-- [ ] T030 `npm run lint`, `npm test`, `npm run typecheck`, `npm run build` zielone; przejść quickstart.md
+- [X] T029 [P] Opisać użycie API i ekranu w README.md
+- [X] T030 `npm run lint`, `npm test`, `npm run typecheck`, `npm run build` zielone; przejść quickstart.md
 - [ ] T031 Po scaleniu do `main`: `git tag v0.1.0`, `git push --tags`
 
 ---
