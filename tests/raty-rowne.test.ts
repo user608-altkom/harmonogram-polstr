@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { policzHarmonogram, type Harmonogram, type ParametryKredytu } from '../src/domena/harmonogram';
+import { seriaWskaznika } from '../src/dane/wskazniki';
+import {
+  policzHarmonogram,
+  rataAnnuitetowa,
+  type Harmonogram,
+  type ParametryKredytu,
+} from '../src/domena/harmonogram';
 
 const SERIA_STALA = [{ od: '2000-01-01', stopa: 0.0355 }];
 
@@ -71,5 +77,60 @@ describe('raty równe przy stałej stopie (liczba kontrolna z BRIEF.md)', () => 
     expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, liczbaRat: 2.5 }, SERIA_STALA)).toThrow('liczba rat');
     expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, pierwszaRata: '1999-12-01' }, SERIA_STALA)).toThrow();
     expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, typRat: 'malejace' }, SERIA_STALA)).toThrow('typ rat');
+  });
+});
+
+describe('zmienny wskaźnik z serii', () => {
+  const SERIA_ZE_ZMIANA = [
+    { od: '2000-01-01', stopa: 0.06 },
+    { od: '2027-01-01', stopa: 0.04 },
+  ];
+  const PARAMETRY: ParametryKredytu = { ...LICZBA_KONTROLNA, pierwszaRata: '2026-11-01' };
+
+  it('POLSTR 1M: nowa stopa od raty w dniu zmiany, rata równa przeliczona od salda i pozostałych rat', () => {
+    const harmonogram = policzHarmonogram(PARAMETRY, SERIA_ZE_ZMIANA);
+    const [pierwsza, druga, trzecia, czwarta] = harmonogram.raty;
+    expect(pierwsza?.stopaRoczna).toBeCloseTo(0.0811, 10);
+    expect(druga?.stopaRoczna).toBeCloseTo(0.0811, 10);
+    expect(druga?.rataGr).toBe(pierwsza?.rataGr);
+    expect(trzecia?.data).toBe('2027-01-01');
+    expect(trzecia?.stopaRoczna).toBeCloseTo(0.0611, 10);
+    const rataPoZmianie = rataAnnuitetowa(druga?.saldoPoSplacieGr ?? 0, 0.04 + 0.0211, 298);
+    expect(trzecia?.rataGr).toBe(rataPoZmianie);
+    expect(czwarta?.rataGr).toBe(rataPoZmianie);
+    expect(rataPoZmianie).toBeLessThan(pierwsza?.rataGr ?? 0);
+    expect(sumaKapitalu(harmonogram)).toBe(400_000_00);
+  });
+
+  it('WIBOR 3M: stopa zmienia się tylko w ratach 1, 4, 7, … i trwa przez 3 raty', () => {
+    const harmonogram = policzHarmonogram({ ...PARAMETRY, wskaznik: 'WIBOR_3M' }, SERIA_ZE_ZMIANA);
+    const stopy = harmonogram.raty.slice(0, 7).map((rata) => Number(rata.stopaRoczna.toFixed(6)));
+    expect(stopy).toEqual([0.0811, 0.0811, 0.0811, 0.0611, 0.0611, 0.0611, 0.0611]);
+    const trzecia = harmonogram.raty[2];
+    expect(harmonogram.raty[3]?.rataGr).toBe(rataAnnuitetowa(trzecia?.saldoPoSplacieGr ?? 0, 0.04 + 0.0211, 297));
+    expect(sumaKapitalu(harmonogram)).toBe(400_000_00);
+  });
+
+  it('seria z pliku: POLSTR 1M daje pierwszą ratę 2 495,85 zł, po końcu serii obowiązuje ostatnia wartość', () => {
+    const seria = seriaWskaznika('POLSTR_1M');
+    const harmonogram = policzHarmonogram(LICZBA_KONTROLNA, seria);
+    const ostatniaWartosc = seria[seria.length - 1]?.stopa ?? 0;
+    expect(harmonogram.rataPierwszaGr).toBe(249585);
+    expect(harmonogram.raty[299]?.stopaRoczna).toBeCloseTo(ostatniaWartosc + 0.0211, 10);
+    expect(sumaKapitalu(harmonogram)).toBe(400_000_00);
+  });
+
+  it('seria z pliku: WIBOR 3M z historii od 2020 zmienia stopę co kwartał', () => {
+    const harmonogram = policzHarmonogram(
+      { ...LICZBA_KONTROLNA, wskaznik: 'WIBOR_3M', pierwszaRata: '2021-01-01', liczbaRat: 60 },
+      seriaWskaznika('WIBOR_3M'),
+    );
+    for (let indeks = 0; indeks < harmonogram.raty.length; indeks++) {
+      if (indeks % 3 !== 0) {
+        expect(harmonogram.raty[indeks]?.stopaRoczna).toBe(harmonogram.raty[indeks - 1]?.stopaRoczna);
+      }
+    }
+    expect(new Set(harmonogram.raty.map((rata) => rata.stopaRoczna)).size).toBeGreaterThan(1);
+    expect(sumaKapitalu(harmonogram)).toBe(400_000_00);
   });
 });
