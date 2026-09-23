@@ -31,11 +31,11 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 **⚠️ KRYTYCZNE**: żadna historia nie startuje przed końcem tej fazy.
 
-- [ ] T001 Zdefiniować typy `TrybNadplaty`, `Nadplata`, `ParametryKredytu` (z `nadplaty?`), `Rata`, `Harmonogram` i klasę `BladParametrow` według data-model.md w src/domena/harmonogram.ts
-- [ ] T002 [P] Napisać testy `zaokraglijDoGrosza` (połówki, ujemne zero, liczby całkowite bez zmian) w tests/podstawy.test.ts
-- [ ] T003 [P] Napisać testy `dataRaty` (kolejne miesiące, przejście roku, 31 stycznia → 28/29 lutego → 31 marca, rok przestępny) w tests/podstawy.test.ts
-- [ ] T004 [P] Napisać testy `stopaWskaznikaNaDzien` (dzień wpisu, dzień przed kolejnym wpisem, po ostatnim wpisie, przed pierwszym wpisem → błąd) w tests/podstawy.test.ts
-- [ ] T005 Zaimplementować `zaokraglijDoGrosza`, `dataRaty`, `stopaWskaznikaNaDzien` w src/domena/harmonogram.ts (T002–T004 zielone)
+- [X] T001 Zdefiniować typy `TrybNadplaty`, `Nadplata`, `ParametryKredytu` (z `nadplaty?`), `Rata`, `Harmonogram` i klasę `BladParametrow` według data-model.md w src/domena/harmonogram.ts
+- [X] T002 [P] Napisać testy `zaokraglijDoGrosza` (połówki, ujemne zero, liczby całkowite bez zmian) w tests/podstawy.test.ts
+- [X] T003 [P] Napisać testy `dataRaty` (kolejne miesiące, przejście roku, 31 stycznia → 28/29 lutego → 31 marca, rok przestępny) w tests/podstawy.test.ts
+- [X] T004 [P] Napisać testy `stopaWskaznikaNaDzien` (dzień wpisu, dzień przed kolejnym wpisem, po ostatnim wpisie, przed pierwszym wpisem → błąd) w tests/podstawy.test.ts
+- [X] T005 Zaimplementować `zaokraglijDoGrosza`, `dataRaty`, `stopaWskaznikaNaDzien` w src/domena/harmonogram.ts (T002–T004 zielone)
 
 **Punkt kontrolny**: funkcje pomocnicze przetestowane, `npm test` zielony.
 
@@ -49,16 +49,16 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 ### Testy historii 1 ⚠️ najpierw, muszą nie przechodzić
 
-- [ ] T006 [P] [US1] Test liczby kontrolnej: 400 000 zł, 300 rat, seria stała `[{ od: '2000-01-01', stopa: 0.0355 }]`, marża 0.0211 → rata 249472 gr (±5 gr), ostatnia rata 249253 gr, 300 rat, daty od 2026-10-01 w tests/raty-rowne.test.ts
-- [ ] T007 [P] [US1] Test niezmiennika: suma części kapitałowych = kwota, saldo po ostatniej racie = 0, `sumaOdsetekGr` = suma odsetek rat, oraz przypadek jednej raty i stopy zerowej w tests/raty-rowne.test.ts
-- [ ] T008 [P] [US1] Test `rataAnnuitetowa` na liczbie kontrolnej w tests/podstawy.test.ts
+- [X] T006 [P] [US1] Test liczby kontrolnej: 400 000 zł, 300 rat, seria stała `[{ od: '2000-01-01', stopa: 0.0355 }]`, marża 0.0211 → rata 249472 gr (±5 gr), ostatnia rata 249253 gr, 300 rat, daty od 2026-10-01 w tests/raty-rowne.test.ts
+- [X] T007 [P] [US1] Test niezmiennika: suma części kapitałowych = kwota, saldo po ostatniej racie = 0, `sumaOdsetekGr` = suma odsetek rat, oraz przypadek jednej raty i stopy zerowej w tests/raty-rowne.test.ts
+- [X] T008 [P] [US1] Test `rataAnnuitetowa` na liczbie kontrolnej w tests/podstawy.test.ts
 
 ### Implementacja historii 1
 
-- [ ] T009 [US1] Zaimplementować `rataAnnuitetowa` w src/domena/harmonogram.ts
-- [ ] T010 [US1] Zaimplementować `policzHarmonogram(parametry, seria)` dla rat równych (walidacja parametrów, pętla rat, ostatnia rata wyrównująca) w src/domena/harmonogram.ts
-- [ ] T011 [US1] Zaktualizować route handler: przekazać `seriaWskaznika(parametry.wskaznik)`, `BladParametrow` → 400, usunąć ścieżkę 501 w app/api/harmonogram/route.ts
-- [ ] T012 [US1] Usunąć test szkieletu „zgłasza brak implementacji” w tests/smoke.test.ts
+- [X] T009 [US1] Zaimplementować `rataAnnuitetowa` w src/domena/harmonogram.ts
+- [X] T010 [US1] Zaimplementować `policzHarmonogram(parametry, seria)` dla rat równych (walidacja parametrów, pętla rat, ostatnia rata wyrównująca) w src/domena/harmonogram.ts
+- [X] T011 [US1] Zaktualizować route handler: przekazać `seriaWskaznika(parametry.wskaznik)`, `BladParametrow` → 400, usunąć ścieżkę 501 w app/api/harmonogram/route.ts
+- [X] T012 [US1] Usunąć test szkieletu „zgłasza brak implementacji” w tests/smoke.test.ts
 
 **Punkt kontrolny**: liczba kontrolna zielona, API zwraca JSON lokalnie i na podglądzie Vercel.
 
