@@ -1,50 +1,57 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Raport synchronizacji
+- Wersja: szablon → 1.0.0 (pierwsze wypełnienie)
+- Dodane zasady: I–VII, sekcje „Ograniczenia techniczne” i „Proces wytwarzania”
+- Szablony: plan-template.md (Constitution Check czyta zasady z tego pliku) ✅, spec-template.md ✅, tasks-template.md ✅
+- Otwarte TODO: brak
+-->
 
-## Core Principles
+# Konstytucja projektu Harmonogram na POLSTR
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## Zasady podstawowe
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### I. Domena czysta i odizolowana
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+Cała logika obliczeń mieszka w `src/domena/`. Funkcje domeny są czyste: bez React, bez I/O (odczytu plików, sieci), bez `Date.now()` i `new Date()` zależnego od strefy, bez `console.log`. Seria wskaźnika trafia do domeny jako argument funkcji, nie jako import, żeby testy mogły podać serię stałą.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Cienki route handler
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+`app/api/harmonogram/route.ts` parsuje query string, przelicza jednostki kontraktu wejścia (złote na grosze, punkty procentowe na ułamek), pobiera serię z `src/dane/`, woła domenę i zwraca JSON. Nie liczy rat, nie zaokrągla wyników i nie iteruje po ratach.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### III. Najpierw test (bezwzględnie)
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Każda zmiana logiki obliczeń zaczyna się od testu vitest w `tests/`, który najpierw nie przechodzi. Każda taka zmiana ma test z liczbą kontrolną (konkretna kwota, konkretna rata). Testy obejmują tylko domenę i dane, ekran nie ma testów jednostkowych.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### IV. Pieniądze w groszach, jedno miejsce zaokrąglania
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Kwoty w domenie są liczbami całkowitymi w groszach, nazwy pól kończą się na `Gr`. Zaokrąglanie do grosza odbywa się wyłącznie w funkcji `zaokraglijDoGrosza` w module domenowym. Ostatnia rata wyrównuje, tak aby suma części kapitałowych i nadpłat była równa kwocie kredytu.
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+### V. TypeScript strict i prostota
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+TypeScript w trybie strict, bez `any`, `as unknown as`, `@ts-ignore` i `!` na wartościach, które mogą być `undefined`. Style tylko przez Tailwind, bez bibliotek UI. Nowa zależność wymaga uzasadnienia w opisie PR.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### VI. Wydanie przez PR i review
+
+Jedna faza z `tasks.md` to jedna gałąź i jeden PR z Copilotem jako recenzentem. Kolejna faza zaczyna się po review i scaleniu poprzedniej. Push do `main` to produkcja na Vercel.
+
+### VII. Język polski
+
+Dokumenty, komentarze, nazwy domenowe (bez skrótów, np. `rataKapitalowa`, nie `rk`) i jednolinijkowe komunikaty commitów są po polsku.
+
+## Ograniczenia techniczne
+
+- Next.js App Router, React 19, TypeScript 5 strict, Tailwind 4, vitest, Node.js 22 lub nowszy.
+- Brak bazy danych: serie wskaźników pochodzą z `dane/*.json` i nie są edytowane w trakcie ćwiczenia.
+- Daty jako napisy `YYYY-MM-DD`, testy w strefie Europe/Warsaw.
+
+## Proces wytwarzania
+
+- Przed zgłoszeniem gotowości fazy: `npm test`, `npm run typecheck` i `npm run build` są zielone lokalnie i w GitHub Actions.
+- Review stosuje reguły z `.github/instructions/review.instructions.md` (kategorie BŁĄD, RYZYKO, STYL).
+- Wersje produkcyjne oznaczamy tagami `v0.1.0` (MVP), `v0.2.0` (karta zmiany).
+
+## Zarządzanie
+
+Konstytucja ma pierwszeństwo przed innymi praktykami w repo; AGENTS.md jest jej rozwinięciem dla agenta. Każdy PR i każde review sprawdza zgodność z zasadami I–VII. Zmiana zasady wymaga PR z uzasadnieniem i podbicia wersji: MAJOR przy usunięciu lub odwróceniu zasady, MINOR przy nowej zasadzie, PATCH przy doprecyzowaniu.
+
+**Wersja**: 1.0.0 | **Przyjęta**: 2026-09-23 | **Ostatnia zmiana**: 2026-09-23
