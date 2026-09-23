@@ -133,17 +133,32 @@ function sprawdzParametry(parametry: ParametryKredytu): void {
   rozbierzDate(parametry.pierwszaRata);
 }
 
+/**
+ * Numer raty, w której dniu odczytujemy wskaźnik dla raty `numer`:
+ * POLSTR 1M zmienia się co miesiąc (każda rata), WIBOR 3M co kwartał liczony od pierwszej raty (1, 4, 7, …).
+ */
+function numerRatyUstalajacejStope(wskaznik: ParametryKredytu['wskaznik'], numer: number): number {
+  if (wskaznik === 'WIBOR_3M') return numer - ((numer - 1) % 3);
+  return numer;
+}
+
 /** Harmonogram spłat dla parametrów kredytu i serii wskaźnika. */
 export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[]): Harmonogram {
   sprawdzParametry(parametry);
 
-  const stopaRoczna = stopaWskaznikaNaDzien(seria, parametry.pierwszaRata) + parametry.marza;
-  const rataRownaGr = rataAnnuitetowa(parametry.kwotaGr, stopaRoczna, parametry.liczbaRat);
-
   const raty: Rata[] = [];
   let saldoGr = parametry.kwotaGr;
+  let stopaPoprzedniejRaty: number | undefined;
+  let rataRownaGr = 0;
 
   for (let numer = 1; numer <= parametry.liczbaRat; numer++) {
+    const dataWskaznika = dataRaty(parametry.pierwszaRata, numerRatyUstalajacejStope(parametry.wskaznik, numer));
+    const stopaRoczna = stopaWskaznikaNaDzien(seria, dataWskaznika) + parametry.marza;
+    if (stopaRoczna !== stopaPoprzedniejRaty) {
+      rataRownaGr = rataAnnuitetowa(saldoGr, stopaRoczna, parametry.liczbaRat - numer + 1);
+      stopaPoprzedniejRaty = stopaRoczna;
+    }
+
     const czescOdsetkowaGr = zaokraglijDoGrosza((saldoGr * stopaRoczna) / MIESIECY_W_ROKU);
     const ostatnia = numer === parametry.liczbaRat;
     const czescKapitalowaGr = ostatnia ? saldoGr : Math.min(saldoGr, rataRownaGr - czescOdsetkowaGr);

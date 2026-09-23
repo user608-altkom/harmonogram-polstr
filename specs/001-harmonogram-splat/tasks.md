@@ -72,13 +72,13 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 ### Testy historii 2 ⚠️
 
-- [ ] T013 [P] [US2] Test POLSTR 1M: seria 6 % od 2000-01-01 i 4 % od 2027-01-01, pierwsza rata 2026-11-01 → raty 1–2 ze stopą 6 % + marża, od raty 3 (2027-01-01) 4 % + marża i rata równa = `rataAnnuitetowa(saldo po racie 2, nowa stopa, N − 2)` w tests/raty-rowne.test.ts
-- [ ] T014 [P] [US2] Test WIBOR 3M na tej samej serii → raty 1–3 ze starą stopą, zmiana dopiero w racie 4, stopa stała w ratach 4–6 w tests/raty-rowne.test.ts
-- [ ] T015 [P] [US2] Test serii z pliku: raty po ostatnim wpisie mają ostatnią znaną wartość; POLSTR z pliku daje pierwszą ratę 249585 gr (2 495,85 zł) w tests/raty-rowne.test.ts
+- [X] T013 [P] [US2] Test POLSTR 1M: seria 6 % od 2000-01-01 i 4 % od 2027-01-01, pierwsza rata 2026-11-01 → raty 1–2 ze stopą 6 % + marża, od raty 3 (2027-01-01) 4 % + marża i rata równa = `rataAnnuitetowa(saldo po racie 2, nowa stopa, N − 2)` w tests/raty-rowne.test.ts
+- [X] T014 [P] [US2] Test WIBOR 3M na tej samej serii → raty 1–3 ze starą stopą, zmiana dopiero w racie 4, stopa stała w ratach 4–6 w tests/raty-rowne.test.ts
+- [X] T015 [P] [US2] Test serii z pliku: raty po ostatnim wpisie mają ostatnią znaną wartość; POLSTR z pliku daje pierwszą ratę 249585 gr (2 495,85 zł) w tests/raty-rowne.test.ts
 
 ### Implementacja historii 2
 
-- [ ] T016 [US2] Dodać wybór daty wskaźnika dla raty (POLSTR: data raty, WIBOR: data raty otwierającej kwartał) i przeliczanie annuitetu przy zmianie stopy w src/domena/harmonogram.ts
+- [X] T016 [US2] Dodać wybór daty wskaźnika dla raty (POLSTR: data raty, WIBOR: data raty otwierającej kwartał) i przeliczanie annuitetu przy zmianie stopy w src/domena/harmonogram.ts
 
 **Punkt kontrolny**: US1 i US2 zielone.
 
