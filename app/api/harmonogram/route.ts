@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { policzHarmonogram, type ParametryKredytu } from '../../../src/domena/harmonogram';
+import { seriaWskaznika } from '../../../src/dane/wskazniki';
+import { BladParametrow, policzHarmonogram, type ParametryKredytu } from '../../../src/domena/harmonogram';
 
 // Route handler jest cienki: parsuje parametry z query string, woła domenę, zwraca JSON.
 // Żadnych obliczeń finansowych w tym pliku. Przeliczenie jednostek wejścia
@@ -40,13 +41,11 @@ export function GET(request: Request) {
   }
 
   try {
-    const harmonogram = policzHarmonogram(parametry);
-    return NextResponse.json(harmonogram);
+    return NextResponse.json(policzHarmonogram(parametry, seriaWskaznika(parametry.wskaznik)));
   } catch (blad) {
-    const komunikat = blad instanceof Error ? blad.message : String(blad);
-    if (komunikat.startsWith('nie zaimplementowano')) {
-      return NextResponse.json({ blad: komunikat, parametry, przyklad: PRZYKLAD }, { status: 501 });
+    if (blad instanceof BladParametrow) {
+      return NextResponse.json({ blad: blad.message, przyklad: PRZYKLAD }, { status: 400 });
     }
-    return NextResponse.json({ blad: komunikat }, { status: 400 });
+    throw blad;
   }
 }
