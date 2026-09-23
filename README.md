@@ -2,7 +2,7 @@
 
 Szablon repozytorium na projekt końcowy szkolenia z AI w cyklu wytwarzania oprogramowania (dzień 3). Cel projektu: kalkulator harmonogramu spłat kredytu hipotecznego ze zmiennym oprocentowaniem na POLSTR 1M lub WIBOR 3M, budowany od zera w TypeScript i Next.js metodyką spec-kit z GitHub Copilotem, wdrażany z GitHuba na Vercel.
 
-Repozytorium zawiera zainicjalizowany spec-kit dla Copilota (skrypty PowerShell), szkielet Next.js (App Router, TypeScript, Tailwind) z pustym modułem domenowym i testami vitest, dane przykładowe wskaźników, workflow GitHub Actions, reguły review dla Copilota i skrypty rutyny review przez Copilot CLI. Nie zawiera implementacji, ta powstaje w trakcie dnia.
+Repozytorium zawiera zainicjalizowany spec-kit dla Copilota (skrypty PowerShell), szkielet Next.js (App Router, TypeScript, Tailwind) z modułem domenowym i testami vitest, dane przykładowe wskaźników, workflow GitHub Actions, reguły review dla Copilota i skrypty rutyny review przez Copilot CLI. Implementacja MVP powstała metodyką spec-kit, artefakty są w `specs/001-harmonogram-splat/`, plan realizacji w [PLAN-REALIZACJI.md](PLAN-REALIZACJI.md).
 
 Dokumenty do przeczytania na start:
 
@@ -14,12 +14,34 @@ Dokumenty do przeczytania na start:
 
 - `src/domena/harmonogram.ts`: czyste funkcje obliczeniowe, bez React i bez I/O. Tu trafia cała logika.
 - `src/dane/wskazniki.ts`: serie wskaźników zaimportowane z `dane/*.json`.
-- `app/api/harmonogram/route.ts`: `GET /api/harmonogram`, parsuje parametry z query string, woła domenę, zwraca JSON. Na razie odpowiada 501 „nie zaimplementowano” z przykładem parametrów.
-- `app/page.tsx`: strona główna. Tu wchodzi ekran z Claude Design.
+- `app/api/harmonogram/route.ts`: `GET /api/harmonogram`, parsuje parametry z query string, woła domenę, zwraca JSON z harmonogramem; błędne parametry dają 400 z przykładem zapytania.
+- `app/page.tsx`: ekran kalkulatora (formularz, tabela rat, eksport CSV), komponent `'use client'` z Tailwind.
 - `tests/`: testy vitest domeny i danych.
 - `dane/`: serie POLSTR 1M i WIBOR 3M.
 - `.github/`, `.specify/`: skille spec-kit, instrukcje review, workflow Actions.
 - `skrypty/`: rutyna review przez Copilot CLI.
+
+## Użycie
+
+Ekran: http://localhost:3000 lokalnie albo adres produkcyjny Vercel. Wypełnij formularz, kliknij „Policz”, tabelę pobierzesz przyciskiem „Eksport CSV”.
+
+API: `GET /api/harmonogram`, pełny kontrakt w [contracts/api-harmonogram.md](specs/001-harmonogram-splat/contracts/api-harmonogram.md).
+
+| Parametr | Przykład | Opis |
+| --- | --- | --- |
+| `kwota` | `400000` | kwota kredytu w złotych |
+| `liczbaRat` | `300` | liczba rat |
+| `marza` | `2.11` | marża w punktach procentowych |
+| `wskaznik` | `POLSTR_1M` | `POLSTR_1M` albo `WIBOR_3M` |
+| `typRat` | `rowne` | `rowne` albo `malejace` |
+| `pierwszaRata` | `2026-10-01` | data pierwszej raty |
+| `nadplaty` | `12:10000:obniz,24:5000:skroc` | opcjonalnie: numer raty, kwota w zł, tryb `obniz` (obniż ratę) albo `skroc` (skróć okres) |
+
+Przykład: http://localhost:3000/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01
+
+Z nadpłatą 10 000 zł po 12. racie w trybie „skróć okres”: http://localhost:3000/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01&nadplaty=12:10000:skroc
+
+Zakresy i walidacja parametrów (np. numer raty nadpłaty od 1 do `liczbaRat`, nadpłata nie większa niż saldo) są opisane w kontrakcie. Kwoty w odpowiedzi są w groszach: `raty` (numer, data, stopa roczna, część kapitałowa, część odsetkowa, rata, nadpłata, saldo po spłacie), `sumaOdsetekGr`, `rataPierwszaGr`, `rataOstatniaGr`. Reguły obliczeń i ich uzasadnienie: [research.md](specs/001-harmonogram-splat/research.md).
 
 ## Wymagania
 
@@ -72,7 +94,7 @@ W PowerShell wpisuj komendy pojedynczo, jedna na linię (PowerShell 5.1 odrzuca 
    npm run typecheck
    ```
 
-6. Uruchom aplikację lokalnie i sprawdź w przeglądarce http://localhost:3000 oraz http://localhost:3000/api/harmonogram (501 „nie zaimplementowano” jest oczekiwane). Zatrzymaj serwer klawiszami Ctrl+C:
+6. Uruchom aplikację lokalnie i sprawdź w przeglądarce http://localhost:3000 oraz http://localhost:3000/api/harmonogram (bez parametrów odpowiedź 400 z przykładem zapytania jest oczekiwana). Zatrzymaj serwer klawiszami Ctrl+C:
 
    ```
    npm run dev
