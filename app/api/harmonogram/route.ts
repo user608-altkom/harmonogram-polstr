@@ -29,9 +29,12 @@ function parsujNadplaty(tekst: string | null): Nadplata[] | string {
     const kwotaZl = Number(kwota);
     // Tryb jest opcjonalny (CR-A): bez niego domena przyjmuje „skróć okres”.
     const trybNadplaty = tryb === undefined ? undefined : TRYBY_NADPLATY[tryb];
-    const bledy =
-      nadmiar.length > 0 || !Number.isInteger(numerRaty) || !Number.isFinite(kwotaZl) || kwotaZl <= 0;
-    if (bledy || (tryb !== undefined && !trybNadplaty)) {
+    const zaDuzoCzlonow = nadmiar.length > 0;
+    const zlyNumerRaty = !Number.isInteger(numerRaty);
+    const zlaKwota = !Number.isFinite(kwotaZl) || kwotaZl <= 0;
+    // Pusty albo nieznany tryb (np. „12:10000:” albo „12:10000:xyz”) to błąd, a nie tryb domyślny.
+    const zlyTryb = tryb !== undefined && !trybNadplaty;
+    if (zaDuzoCzlonow || zlyNumerRaty || zlaKwota || zlyTryb) {
       return `nadplaty: lista numerRaty:kwota[:obniz|skroc] rozdzielona przecinkami, np. 12:10000:obniz,24:5000 (błąd w „${pozycja}”)`;
     }
     const kwotaGr = Math.round(kwotaZl * 100);

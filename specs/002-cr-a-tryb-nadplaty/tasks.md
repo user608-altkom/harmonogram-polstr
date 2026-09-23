@@ -23,7 +23,7 @@ description: "Lista zadań: CR-A, wybór skutku nadpłaty"
 
 ### Wydanie
 
-- [ ] TA06 `npm test`, `npm run typecheck`, `npm run build` zielone; PR z odhaczonymi kryteriami 1–4, review, scalenie
+- [X] TA06 `npm test`, `npm run typecheck`, `npm run build` zielone; PR z odhaczonymi kryteriami 1–4, review, scalenie
 - [ ] TA07 `git tag v0.2.0`, `git push --tags`, sprawdzenie produkcji (`nadplaty=1:30000` daje to samo co `nadplaty=1:30000:skroc`)
 
 ## Zależności

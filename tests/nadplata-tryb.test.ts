@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { policzHarmonogram, type Harmonogram, type ParametryKredytu } from '../src/domena/harmonogram';
+import { BladParametrow, policzHarmonogram, type Harmonogram, type ParametryKredytu } from '../src/domena/harmonogram';
 
 // Karta zmiany CR-A: 300 000 zł, 240 rat równych, WIBOR 3M 4,55 % + marża 2,11 pp = 6,66 %,
 // nadpłata 30 000 zł po zaksięgowaniu 1. raty.
@@ -65,5 +65,11 @@ describe('nadplata.tryb (karta zmiany CR-A)', () => {
     );
     expect(bezTrybu).toEqual(skrocOkres);
     expect(bezTrybu.raty).toHaveLength(196);
+  });
+
+  it('nadpłata bez trybu po ostatniej racie (saldo zero) → BladParametrow', () => {
+    expect(() =>
+      policzHarmonogram({ ...KREDYT, nadplaty: [{ numerRaty: 240, kwotaGr: 1_00 }] }, SERIA_STALA),
+    ).toThrow(BladParametrow);
   });
 });
