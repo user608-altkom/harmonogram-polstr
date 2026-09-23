@@ -25,6 +25,25 @@ interface Harmonogram {
   rataOstatniaGr: number;
 }
 
+interface OdpowiedzBledu {
+  blad: string;
+}
+
+function jestHarmonogramem(dane: unknown): dane is Harmonogram {
+  if (typeof dane !== 'object' || dane === null) return false;
+  const kandydat = dane as Partial<Record<keyof Harmonogram, unknown>>;
+  return (
+    Array.isArray(kandydat.raty) &&
+    typeof kandydat.sumaOdsetekGr === 'number' &&
+    typeof kandydat.rataPierwszaGr === 'number' &&
+    typeof kandydat.rataOstatniaGr === 'number'
+  );
+}
+
+function jestBledem(dane: unknown): dane is OdpowiedzBledu {
+  return typeof dane === 'object' && dane !== null && typeof (dane as Partial<OdpowiedzBledu>).blad === 'string';
+}
+
 type TrybNadplaty = 'obniz' | 'skroc';
 
 interface WierszNadplaty {
@@ -95,7 +114,7 @@ export default function Strona() {
   const [liczenie, ustawLiczenie] = useState(false);
 
   function dodajNadplate() {
-    ustawNadplaty([...nadplaty, { id: kolejneId, numerRaty: '12', kwota: '10000', tryb: 'skroc' }]);
+    ustawNadplaty([...nadplaty, { id: kolejneId, numerRaty: '', kwota: '', tryb: 'skroc' }]);
     ustawKolejneId(kolejneId + 1);
   }
 
@@ -125,14 +144,12 @@ export default function Strona() {
     try {
       const odpowiedz = await fetch(`/api/harmonogram?${parametry.toString()}`);
       const dane: unknown = await odpowiedz.json();
-      if (!odpowiedz.ok) {
-        const komunikat =
-          typeof dane === 'object' && dane !== null && 'blad' in dane ? String(dane.blad) : `błąd ${odpowiedz.status}`;
+      if (!odpowiedz.ok || !jestHarmonogramem(dane)) {
         ustawHarmonogram(null);
-        ustawBlad(komunikat);
+        ustawBlad(jestBledem(dane) ? dane.blad : `Nieoczekiwana odpowiedź serwera (status ${odpowiedz.status}).`);
         return;
       }
-      ustawHarmonogram(dane as Harmonogram);
+      ustawHarmonogram(dane);
     } catch {
       ustawHarmonogram(null);
       ustawBlad('Nie udało się połączyć z serwerem.');
@@ -189,11 +206,11 @@ export default function Strona() {
             <div key={wiersz.id} className="grid grid-cols-1 items-end gap-3 sm:grid-cols-[1fr_1fr_1.4fr_auto]">
               <label className={ETYKIETA}>
                 Po racie nr
-                <input className={POLE} inputMode="numeric" value={wiersz.numerRaty} onChange={(e) => zmienNadplate(wiersz.id, { numerRaty: e.target.value })} />
+                <input className={POLE} inputMode="numeric" placeholder="np. 12" required value={wiersz.numerRaty} onChange={(e) => zmienNadplate(wiersz.id, { numerRaty: e.target.value })} />
               </label>
               <label className={ETYKIETA}>
                 Kwota (zł)
-                <input className={POLE} inputMode="decimal" value={wiersz.kwota} onChange={(e) => zmienNadplate(wiersz.id, { kwota: e.target.value })} />
+                <input className={POLE} inputMode="decimal" placeholder="np. 10000" required value={wiersz.kwota} onChange={(e) => zmienNadplate(wiersz.id, { kwota: e.target.value })} />
               </label>
               <label className={ETYKIETA}>
                 Tryb
