@@ -53,7 +53,12 @@ interface WierszNadplaty {
   tryb: TrybNadplaty;
 }
 
-const FORMAT_ZLOTYCH = new Intl.NumberFormat('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const FORMAT_ZLOTYCH = new Intl.NumberFormat('pl-PL', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  // Polskie locale domyślnie nie grupuje liczb czterocyfrowych (2495,85); BRIEF wymaga separatora tysięcy.
+  useGrouping: 'always',
+});
 const FORMAT_PROCENTU = new Intl.NumberFormat('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 
 function zlote(groszy: number): string {

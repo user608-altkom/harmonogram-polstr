@@ -133,7 +133,7 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 - [X] T025 [US5] Komponent `'use client'` z Tailwind: formularz (kwota, liczba rat, data pierwszej raty, marża, wskaźnik, typ rat, lista nadpłat), przycisk „Policz” w app/page.tsx
 - [X] T026 [US5] `fetch('/api/harmonogram?…')`, podsumowanie (rata pierwsza i ostatnia, suma odsetek), tabela rat, komunikat błędu z API w app/page.tsx
 - [X] T027 [US5] Eksport CSV w przeglądarce (separator `;`, BOM UTF-8) w app/page.tsx
-- [ ] T028 [US5] Sprawdzić ekran ręcznie na liczbie kontrolnej lokalnie i na podglądzie Vercel
+- [X] T028 [US5] Sprawdzić ekran ręcznie na liczbie kontrolnej lokalnie i na podglądzie Vercel
 
 **Punkt kontrolny**: MVP kompletne.
 
@@ -143,7 +143,7 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 - [X] T029 [P] Opisać użycie API i ekranu w README.md
 - [X] T030 `npm run lint`, `npm test`, `npm run typecheck`, `npm run build` zielone; przejść quickstart.md
-- [ ] T031 Po scaleniu do `main`: `git tag v0.1.0`, `git push --tags`
+- [X] T031 Po scaleniu do `main`: `git tag v0.1.0`, `git push --tags`
 
 ---
 
