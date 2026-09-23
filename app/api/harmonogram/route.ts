@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { seriaWskaznika } from '../../../src/dane/wskazniki';
-import { BladParametrow, policzHarmonogram, type ParametryKredytu } from '../../../src/domena/harmonogram';
+import {
+  BladParametrow,
+  policzHarmonogram,
+  type Nadplata,
+  type ParametryKredytu,
+} from '../../../src/domena/harmonogram';
 
 // Route handler jest cienki: parsuje parametry z query string, woła domenę, zwraca JSON.
 // Żadnych obliczeń finansowych w tym pliku. Przeliczenie jednostek wejścia
@@ -8,6 +13,27 @@ import { BladParametrow, policzHarmonogram, type ParametryKredytu } from '../../
 
 const PRZYKLAD =
   '/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01';
+
+// Krótkie klucze `obniz` i `skroc` to format kontraktu query string (contracts/api-harmonogram.md),
+// mapowane na pełne nazwy domenowe `Nadplata['tryb']`.
+const TRYBY_NADPLATY: Record<string, Nadplata['tryb']> = { obniz: 'obnizRate', skroc: 'skrocOkres' };
+
+/** Parametr `nadplaty=12:10000:obniz,24:5000:skroc` (numer raty:kwota w złotych:tryb). */
+function parsujNadplaty(tekst: string | null): Nadplata[] | string {
+  if (!tekst) return [];
+  const nadplaty: Nadplata[] = [];
+  for (const pozycja of tekst.split(',')) {
+    const [numer, kwota, tryb, ...nadmiar] = pozycja.split(':');
+    const numerRaty = Number(numer);
+    const kwotaZl = Number(kwota);
+    const trybNadplaty = tryb === undefined ? undefined : TRYBY_NADPLATY[tryb];
+    if (nadmiar.length > 0 || !Number.isInteger(numerRaty) || !Number.isFinite(kwotaZl) || kwotaZl <= 0 || !trybNadplaty) {
+      return `nadplaty: lista numerRaty:kwota:obniz|skroc rozdzielona przecinkami, np. 12:10000:obniz,24:5000:skroc (błąd w „${pozycja}”)`;
+    }
+    nadplaty.push({ numerRaty, kwotaGr: Math.round(kwotaZl * 100), tryb: trybNadplaty });
+  }
+  return nadplaty;
+}
 
 function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
   const kwota = Number(szukane.get('kwota'));
@@ -23,6 +49,8 @@ function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
   if (wskaznik !== 'POLSTR_1M' && wskaznik !== 'WIBOR_3M') return 'wskaznik: POLSTR_1M albo WIBOR_3M';
   if (typRat !== 'rowne' && typRat !== 'malejace') return 'typRat: rowne albo malejace';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(pierwszaRata)) return 'pierwszaRata: data YYYY-MM-DD';
+  const nadplaty = parsujNadplaty(szukane.get('nadplaty'));
+  if (typeof nadplaty === 'string') return nadplaty;
 
   return {
     kwotaGr: Math.round(kwota * 100),
@@ -31,6 +59,7 @@ function parsujParametry(szukane: URLSearchParams): ParametryKredytu | string {
     wskaznik,
     typRat,
     pierwszaRata,
+    nadplaty,
   };
 }
 
