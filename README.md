@@ -39,7 +39,9 @@ API: `GET /api/harmonogram`, pełny kontrakt w [contracts/api-harmonogram.md](sp
 
 Przykład: http://localhost:3000/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01
 
-Kwoty w odpowiedzi są w groszach: `raty` (numer, data, stopa roczna, część kapitałowa, część odsetkowa, rata, nadpłata, saldo po spłacie), `sumaOdsetekGr`, `rataPierwszaGr`, `rataOstatniaGr`. Reguły obliczeń i ich uzasadnienie: [research.md](specs/001-harmonogram-splat/research.md).
+Z nadpłatą 10 000 zł po 12. racie w trybie „skróć okres”: http://localhost:3000/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01&nadplaty=12:10000:skroc
+
+Zakresy i walidacja parametrów (np. numer raty nadpłaty od 1 do `liczbaRat`, nadpłata nie większa niż saldo) są opisane w kontrakcie. Kwoty w odpowiedzi są w groszach: `raty` (numer, data, stopa roczna, część kapitałowa, część odsetkowa, rata, nadpłata, saldo po spłacie), `sumaOdsetekGr`, `rataPierwszaGr`, `rataOstatniaGr`. Reguły obliczeń i ich uzasadnienie: [research.md](specs/001-harmonogram-splat/research.md).
 
 ## Wymagania
 
