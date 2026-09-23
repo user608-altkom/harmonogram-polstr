@@ -12,7 +12,7 @@ Kolumna „Przeliczenie w handlerze” to konwersja jednostek kontraktu wejścia
 | `wskaznik` | tak | `POLSTR_1M` \| `WIBOR_3M` | `POLSTR_1M` | |
 | `typRat` | tak | `rowne` \| `malejace` | `rowne` | |
 | `pierwszaRata` | tak | `YYYY-MM-DD` | `2026-10-01` | |
-| `nadplaty` | nie | lista `numerRaty:kwotaZl:tryb` rozdzielona przecinkami, tryb `obniz` \| `skroc` | `12:10000:obniz,24:5000:skroc` | kwota × 100, `obniz` → `obnizRate`, `skroc` → `skrocOkres` |
+| `nadplaty` | nie | lista `numerRaty:kwotaZl[:tryb]` rozdzielona przecinkami, tryb `obniz` \| `skroc`, bez trybu „skróć okres” (CR-A) | `12:10000:obniz,24:5000` | kwota × 100, `obniz` → `obnizRate`, `skroc` → `skrocOkres`, brak trybu → pole pominięte (domena przyjmuje `skrocOkres`) |
 
 Przykład: `/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01`
 
