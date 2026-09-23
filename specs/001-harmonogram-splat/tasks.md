@@ -110,15 +110,15 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 ### Testy historii 4 ⚠️
 
-- [ ] T019 [P] [US4] Test „obniż ratę” (raty równe): nadpłata 10 000 zł po racie 12 → 300 rat, rata od 13 = `rataAnnuitetowa(saldo po nadpłacie, stopa, 288)`, niższa niż bez nadpłaty, suma kapitału + nadpłat = kwota w tests/nadplaty.test.ts
-- [ ] T020 [P] [US4] Test „skróć okres” (raty równe): ta sama nadpłata → rata 13+ równa racie bez nadpłaty, mniej niż 300 rat, niższa suma odsetek w tests/nadplaty.test.ts
-- [ ] T021 [P] [US4] Test obu trybów dla rat malejących oraz nadpłaty spłacającej całe saldo w tests/nadplaty.test.ts
-- [ ] T022 [P] [US4] Test walidacji: nadpłata większa niż saldo, numer raty 0 lub > N, kwota ≤ 0 → `BladParametrow` w tests/nadplaty.test.ts
+- [X] T019 [P] [US4] Test „obniż ratę” (raty równe): nadpłata 10 000 zł po racie 12 → 300 rat, rata od 13 = `rataAnnuitetowa(saldo po nadpłacie, stopa, 288)`, niższa niż bez nadpłaty, suma kapitału + nadpłat = kwota w tests/nadplaty.test.ts
+- [X] T020 [P] [US4] Test „skróć okres” (raty równe): ta sama nadpłata → rata 13+ równa racie bez nadpłaty, mniej niż 300 rat, niższa suma odsetek w tests/nadplaty.test.ts
+- [X] T021 [P] [US4] Test obu trybów dla rat malejących oraz nadpłaty spłacającej całe saldo w tests/nadplaty.test.ts
+- [X] T022 [P] [US4] Test walidacji: nadpłata większa niż saldo, numer raty 0 lub > N, kwota ≤ 0 → `BladParametrow` w tests/nadplaty.test.ts
 
 ### Implementacja historii 4
 
-- [ ] T023 [US4] Zaimplementować nadpłaty i planowaną liczbę rat po skróceniu okresu w src/domena/harmonogram.ts
-- [ ] T024 [US4] Parsować parametr `nadplaty` (`numerRaty:kwotaZl:obniz|skroc`) w app/api/harmonogram/route.ts
+- [X] T023 [US4] Zaimplementować nadpłaty i planowaną liczbę rat po skróceniu okresu w src/domena/harmonogram.ts
+- [X] T024 [US4] Parsować parametr `nadplaty` (`numerRaty:kwotaZl:obniz|skroc`) w app/api/harmonogram/route.ts
 
 **Punkt kontrolny**: US1–US4 zielone, API przyjmuje nadpłaty.
 

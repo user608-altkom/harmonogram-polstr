@@ -131,6 +131,21 @@ function sprawdzParametry(parametry: ParametryKredytu): void {
     throw new BladParametrow('typ rat: rowne albo malejace');
   }
   rozbierzDate(parametry.pierwszaRata);
+  for (const nadplata of parametry.nadplaty ?? []) {
+    if (
+      !Number.isInteger(nadplata.numerRaty) ||
+      nadplata.numerRaty < 1 ||
+      nadplata.numerRaty > parametry.liczbaRat
+    ) {
+      throw new BladParametrow(`nadpłata: numer raty od 1 do ${parametry.liczbaRat}`);
+    }
+    if (!Number.isInteger(nadplata.kwotaGr) || nadplata.kwotaGr <= 0) {
+      throw new BladParametrow('nadpłata: kwota dodatnia');
+    }
+    if (nadplata.tryb !== 'obnizRate' && nadplata.tryb !== 'skrocOkres') {
+      throw new BladParametrow('nadpłata: tryb obnizRate albo skrocOkres');
+    }
+  }
 }
 
 /**
@@ -147,31 +162,60 @@ function numerRatyUstalajacejStope(wskaznik: ParametryKredytu['wskaznik'], numer
 export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[]): Harmonogram {
   sprawdzParametry(parametry);
 
+  const nadplaty = parametry.nadplaty ?? [];
   const raty: Rata[] = [];
   let saldoGr = parametry.kwotaGr;
+  // Liczba rat maleje po nadpłacie w trybie „skróć okres”.
+  let planowanaLiczbaRat = parametry.liczbaRat;
   // Wartość wskaźnika z poprzedniej raty; undefined wymusza wyliczenie raty równej w pierwszej iteracji,
   // więc początkowe 0 w rataRownaGr nigdy nie trafia do wyniku.
   let wskaznikPoprzedniejRaty: number | undefined;
   let rataRownaGr = 0;
   // Raty malejące: stała część kapitałowa, zmiana stopy wpływa tylko na odsetki.
-  const czescKapitalowaMalejacaGr = zaokraglijDoGrosza(parametry.kwotaGr / parametry.liczbaRat);
+  let czescKapitalowaMalejacaGr = zaokraglijDoGrosza(parametry.kwotaGr / parametry.liczbaRat);
+  // Nadpłata w trybie „obniż ratę” wymusza przeliczenie raty przed kolejną ratą.
+  let obnizRate = false;
 
-  for (let numer = 1; numer <= parametry.liczbaRat; numer++) {
+  for (let numer = 1; numer <= planowanaLiczbaRat; numer++) {
+    const pozostaleRaty = planowanaLiczbaRat - numer + 1;
     const dataWskaznika = dataRaty(parametry.pierwszaRata, numerRatyUstalajacejStope(parametry.wskaznik, numer));
     // Porównujemy wartość wprost z serii (bez arytmetyki), więc zmiana wpisu zawsze wymusza przeliczenie.
     const wartoscWskaznika = stopaWskaznikaNaDzien(seria, dataWskaznika);
     const stopaRoczna = wartoscWskaznika + parametry.marza;
-    if (parametry.typRat === 'rowne' && wartoscWskaznika !== wskaznikPoprzedniejRaty) {
-      rataRownaGr = rataAnnuitetowa(saldoGr, stopaRoczna, parametry.liczbaRat - numer + 1);
+    if (parametry.typRat === 'rowne' && (obnizRate || wartoscWskaznika !== wskaznikPoprzedniejRaty)) {
+      rataRownaGr = rataAnnuitetowa(saldoGr, stopaRoczna, pozostaleRaty);
+    }
+    if (parametry.typRat === 'malejace' && obnizRate) {
+      czescKapitalowaMalejacaGr = zaokraglijDoGrosza(saldoGr / pozostaleRaty);
     }
     wskaznikPoprzedniejRaty = wartoscWskaznika;
+    obnizRate = false;
 
     const czescOdsetkowaGr = zaokraglijDoGrosza((saldoGr * stopaRoczna) / MIESIECY_W_ROKU);
     const planowanaCzescKapitalowaGr =
       parametry.typRat === 'rowne' ? rataRownaGr - czescOdsetkowaGr : czescKapitalowaMalejacaGr;
-    const ostatnia = numer === parametry.liczbaRat;
+    const ostatnia = numer === planowanaLiczbaRat;
     const czescKapitalowaGr = ostatnia ? saldoGr : Math.min(saldoGr, planowanaCzescKapitalowaGr);
     saldoGr -= czescKapitalowaGr;
+
+    let nadplataGr = 0;
+    for (const nadplata of nadplaty) {
+      if (nadplata.numerRaty !== numer) continue;
+      if (nadplata.kwotaGr > saldoGr) {
+        throw new BladParametrow(`nadpłata po racie ${numer}: kwota większa niż saldo ${saldoGr} gr`);
+      }
+      saldoGr -= nadplata.kwotaGr;
+      nadplataGr += nadplata.kwotaGr;
+      if (nadplata.tryb === 'obnizRate') {
+        obnizRate = true;
+      } else {
+        const ratDoSplaty =
+          parametry.typRat === 'rowne'
+            ? liczbaRatAnnuitetu(saldoGr, stopaRoczna, rataRownaGr)
+            : Math.ceil(saldoGr / czescKapitalowaMalejacaGr);
+        planowanaLiczbaRat = Math.min(planowanaLiczbaRat, numer + ratDoSplaty);
+      }
+    }
 
     raty.push({
       numer,
@@ -180,12 +224,35 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
       czescKapitalowaGr,
       czescOdsetkowaGr,
       rataGr: czescKapitalowaGr + czescOdsetkowaGr,
-      nadplataGr: 0,
+      nadplataGr,
       saldoPoSplacieGr: saldoGr,
     });
+
+    if (saldoGr === 0) break;
+  }
+
+  const poOstatniejRacie = nadplaty.find((nadplata) => nadplata.numerRaty > raty.length);
+  if (poOstatniejRacie) {
+    throw new BladParametrow(
+      `nadpłata po racie ${poOstatniejRacie.numerRaty}: kredyt jest spłacony po racie ${raty.length}`,
+    );
   }
 
   return podsumuj(raty);
+}
+
+/**
+ * Liczba rat annuitetowych potrzebnych do spłaty salda przy danej racie: ⌈−ln(1 − S·r/A) / ln(1 + r)⌉.
+ * Tolerancja 1e-9 chroni przed dodatkową ratą z samego błędu zmiennoprzecinkowego.
+ */
+function liczbaRatAnnuitetu(saldoGr: number, stopaRoczna: number, rataGr: number): number {
+  if (saldoGr === 0) return 0;
+  const stopaMiesieczna = stopaRoczna / MIESIECY_W_ROKU;
+  if (stopaMiesieczna === 0) return Math.ceil(saldoGr / rataGr);
+  const liczba = -Math.log(1 - (saldoGr * stopaMiesieczna) / rataGr) / Math.log(1 + stopaMiesieczna);
+  // Rata nie pokrywa odsetek: skrócenie jest niewykonalne, zostaje dotychczasowa liczba rat.
+  if (!Number.isFinite(liczba)) return Number.POSITIVE_INFINITY;
+  return Math.ceil(liczba - 1e-9);
 }
 
 function podsumuj(raty: Rata[]): Harmonogram {
