@@ -39,7 +39,7 @@ Doradca dodaje nadpłatę i wybiera tryb „skróć okres” albo „obniż rat�
 ## Kryteria sukcesu
 
 - **SC-A1**: Test `nadplata.tryb` z liczbami z karty przechodzi, reszta testów zielona.
-- **SC-A2**: Produkcja po tagu `v0.2.0` zwraca dla `nadplaty=1:30000` harmonogram 196 rat.
+- **SC-A2**: Produkcja po tagu `v0.2.0` zwraca dla `nadplaty=1:30000` ten sam harmonogram co dla `nadplaty=1:30000:skroc`. (API bierze WIBOR 3M z `dane/`, nie stałe 4,55 % z karty, więc liczba rat różni się od 196; liczby z karty sprawdza test domeny ze stałą serią.)
 
 ## Założenia
 

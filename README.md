@@ -35,11 +35,13 @@ API: `GET /api/harmonogram`, pełny kontrakt w [contracts/api-harmonogram.md](sp
 | `wskaznik` | `POLSTR_1M` | `POLSTR_1M` albo `WIBOR_3M` |
 | `typRat` | `rowne` | `rowne` albo `malejace` |
 | `pierwszaRata` | `2026-10-01` | data pierwszej raty |
-| `nadplaty` | `12:10000:obniz,24:5000:skroc` | opcjonalnie: numer raty, kwota w zł, tryb `obniz` (obniż ratę) albo `skroc` (skróć okres) |
+| `nadplaty` | `12:10000:obniz,24:5000` | opcjonalnie: numer raty, kwota w zł, tryb `obniz` (obniż ratę) albo `skroc` (skróć okres); bez trybu „skróć okres” |
 
 Przykład: http://localhost:3000/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01
 
 Z nadpłatą 10 000 zł po 12. racie w trybie „skróć okres”: http://localhost:3000/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01&nadplaty=12:10000:skroc
+
+Konwencja nadpłat: nadpłata następuje po racie danego miesiąca (np. `12:10000` to nadpłata po zapłacie 12. raty), a odsetki tej raty liczone są od salda sprzed nadpłaty. Nadpłata zmniejsza saldo, od którego liczone są odsetki kolejnej raty. Tryb „obniż ratę” zachowuje liczbę rat i przelicza ratę od salda po nadpłacie; tryb „skróć okres” (domyślny) zachowuje ratę i skraca harmonogram, a ostatnia rata wyrównuje.
 
 Zakresy i walidacja parametrów (np. numer raty nadpłaty od 1 do `liczbaRat`, nadpłata nie większa niż saldo) są opisane w kontrakcie. Kwoty w odpowiedzi są w groszach: `raty` (numer, data, stopa roczna, część kapitałowa, część odsetkowa, rata, nadpłata, saldo po spłacie), `sumaOdsetekGr`, `rataPierwszaGr`, `rataOstatniaGr`. Reguły obliczeń i ich uzasadnienie: [research.md](specs/001-harmonogram-splat/research.md).
 

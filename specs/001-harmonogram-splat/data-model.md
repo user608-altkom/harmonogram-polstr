@@ -21,7 +21,7 @@ Seria jest uporządkowana rosnąco po `od` (sprawdza `tests/smoke.test.ts`).
 | --- | --- | --- |
 | `numerRaty` | `number` | całkowita, 1..`liczbaRat`, rata musi istnieć w harmonogramie |
 | `kwotaGr` | `number` | całkowita > 0, nie większa niż saldo po racie `numerRaty` |
-| `tryb` | `TrybNadplaty` | |
+| `tryb` | `TrybNadplaty` (opcjonalny) | brak oznacza `skrocOkres` (CR-A, specs/002-cr-a-tryb-nadplaty) |
 
 ## ParametryKredytu
 
