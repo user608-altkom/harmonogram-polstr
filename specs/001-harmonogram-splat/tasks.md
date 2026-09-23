@@ -130,9 +130,9 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 **Test niezależny**: ręcznie według quickstart.md, pkt 3 (ekran bez testów jednostkowych).
 
-- [ ] T025 [US5] Komponent `'use client'` z Tailwind: formularz (kwota, liczba rat, data pierwszej raty, marża, wskaźnik, typ rat, lista nadpłat), przycisk „Policz” w app/page.tsx
-- [ ] T026 [US5] `fetch('/api/harmonogram?…')`, podsumowanie (rata pierwsza i ostatnia, suma odsetek), tabela rat, komunikat błędu z API w app/page.tsx
-- [ ] T027 [US5] Eksport CSV w przeglądarce (separator `;`, BOM UTF-8) w app/page.tsx
+- [X] T025 [US5] Komponent `'use client'` z Tailwind: formularz (kwota, liczba rat, data pierwszej raty, marża, wskaźnik, typ rat, lista nadpłat), przycisk „Policz” w app/page.tsx
+- [X] T026 [US5] `fetch('/api/harmonogram?…')`, podsumowanie (rata pierwsza i ostatnia, suma odsetek), tabela rat, komunikat błędu z API w app/page.tsx
+- [X] T027 [US5] Eksport CSV w przeglądarce (separator `;`, BOM UTF-8) w app/page.tsx
 - [ ] T028 [US5] Sprawdzić ekran ręcznie na liczbie kontrolnej lokalnie i na podglądzie Vercel
 
 **Punkt kontrolny**: MVP kompletne.
