@@ -16,8 +16,11 @@ export interface Nadplata {
   numerRaty: number;
   /** Kwota nadpłaty w groszach (liczba całkowita dodatnia). */
   kwotaGr: number;
-  /** `obnizRate`: ta sama liczba rat, niższa rata; `skrocOkres`: ta sama rata, mniej rat. */
-  tryb: TrybNadplaty;
+  /**
+   * `obnizRate`: ta sama liczba rat, niższa rata; `skrocOkres`: ta sama rata, mniej rat.
+   * Brak trybu oznacza `skrocOkres` (karta zmiany CR-A).
+   */
+  tryb?: TrybNadplaty;
 }
 
 export interface ParametryKredytu {
@@ -142,7 +145,7 @@ function sprawdzParametry(parametry: ParametryKredytu): void {
     if (!Number.isInteger(nadplata.kwotaGr) || nadplata.kwotaGr <= 0) {
       throw new BladParametrow('nadpłata: kwota dodatnia');
     }
-    if (nadplata.tryb !== 'obnizRate' && nadplata.tryb !== 'skrocOkres') {
+    if (nadplata.tryb !== undefined && nadplata.tryb !== 'obnizRate' && nadplata.tryb !== 'skrocOkres') {
       throw new BladParametrow('nadpłata: tryb obnizRate albo skrocOkres');
     }
   }
@@ -206,7 +209,8 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
       }
       saldoGr -= nadplata.kwotaGr;
       nadplataGr += nadplata.kwotaGr;
-      if (nadplata.tryb === 'obnizRate') {
+      const tryb: TrybNadplaty = nadplata.tryb ?? 'skrocOkres';
+      if (tryb === 'obnizRate') {
         wymusPrzeliczenieRaty = true;
       } else {
         const ratDoSplaty =

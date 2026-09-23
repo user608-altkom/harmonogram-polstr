@@ -5,6 +5,7 @@ import {
   policzHarmonogram,
   type Nadplata,
   type ParametryKredytu,
+  type TrybNadplaty,
 } from '../../../src/domena/harmonogram';
 
 // Route handler jest cienki: parsuje parametry z query string, woła domenę, zwraca JSON.
@@ -15,10 +16,10 @@ const PRZYKLAD =
   '/api/harmonogram?kwota=400000&liczbaRat=300&marza=2.11&wskaznik=POLSTR_1M&typRat=rowne&pierwszaRata=2026-10-01';
 
 // Krótkie klucze `obniz` i `skroc` to format kontraktu query string (contracts/api-harmonogram.md),
-// mapowane na pełne nazwy domenowe `Nadplata['tryb']`.
-const TRYBY_NADPLATY: Record<string, Nadplata['tryb']> = { obniz: 'obnizRate', skroc: 'skrocOkres' };
+// mapowane na pełne nazwy domenowe `TrybNadplaty`.
+const TRYBY_NADPLATY: Record<string, TrybNadplaty> = { obniz: 'obnizRate', skroc: 'skrocOkres' };
 
-/** Parametr `nadplaty=12:10000:obniz,24:5000:skroc` (numer raty:kwota w złotych:tryb). */
+/** Parametr `nadplaty=12:10000:obniz,24:5000` (numer raty:kwota w złotych[:tryb], bez trybu „skróć okres”). */
 function parsujNadplaty(tekst: string | null): Nadplata[] | string {
   if (!tekst) return [];
   const nadplaty: Nadplata[] = [];
@@ -26,11 +27,15 @@ function parsujNadplaty(tekst: string | null): Nadplata[] | string {
     const [numer, kwota, tryb, ...nadmiar] = pozycja.split(':');
     const numerRaty = Number(numer);
     const kwotaZl = Number(kwota);
+    // Tryb jest opcjonalny (CR-A): bez niego domena przyjmuje „skróć okres”.
     const trybNadplaty = tryb === undefined ? undefined : TRYBY_NADPLATY[tryb];
-    if (nadmiar.length > 0 || !Number.isInteger(numerRaty) || !Number.isFinite(kwotaZl) || kwotaZl <= 0 || !trybNadplaty) {
-      return `nadplaty: lista numerRaty:kwota:obniz|skroc rozdzielona przecinkami, np. 12:10000:obniz,24:5000:skroc (błąd w „${pozycja}”)`;
+    const bledy =
+      nadmiar.length > 0 || !Number.isInteger(numerRaty) || !Number.isFinite(kwotaZl) || kwotaZl <= 0;
+    if (bledy || (tryb !== undefined && !trybNadplaty)) {
+      return `nadplaty: lista numerRaty:kwota[:obniz|skroc] rozdzielona przecinkami, np. 12:10000:obniz,24:5000 (błąd w „${pozycja}”)`;
     }
-    nadplaty.push({ numerRaty, kwotaGr: Math.round(kwotaZl * 100), tryb: trybNadplaty });
+    const kwotaGr = Math.round(kwotaZl * 100);
+    nadplaty.push(trybNadplaty ? { numerRaty, kwotaGr, tryb: trybNadplaty } : { numerRaty, kwotaGr });
   }
   return nadplaty;
 }
