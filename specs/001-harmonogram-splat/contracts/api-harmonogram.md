@@ -2,6 +2,8 @@
 
 ## Parametry query string
 
+Kolumna „Przeliczenie w handlerze” to konwersja jednostek kontraktu wejścia (część parsowania, zasada II konstytucji), a nie obliczenie finansowe. Liczenie rat, odsetek i sald oraz zaokrąglanie wyników jest wyłącznie w `src/domena/`.
+
 | Parametr | Wymagany | Format | Przykład | Przeliczenie w handlerze |
 | --- | --- | --- | --- | --- |
 | `kwota` | tak | liczba > 0, złote | `400000` | × 100 → `kwotaGr` |

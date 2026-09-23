@@ -15,7 +15,7 @@ Wszystkie niejasności z kontekstu technicznego są rozstrzygnięte poniżej (pr
 
 ## D3. Daty rat
 
-- **Decyzja**: rata *n* = pierwsza rata + (*n*−1) miesięcy, ten sam dzień miesiąca, a w krótszym miesiącu jego ostatni dzień. Arytmetyka na roku, miesiącu i dniu, bez obiektu `Date`.
+- **Decyzja**: rata *n* = pierwsza rata + (*n*−1) miesięcy, zawsze liczona od dnia pierwszej raty (nie od poprzedniej, być może skróconej raty): ten sam dzień miesiąca, a w krótszym miesiącu jego ostatni dzień. Przykład: 31.01 → 28.02 → 31.03. Arytmetyka na roku, miesiącu i dniu, bez obiektu `Date`.
 - **Uzasadnienie**: domena bez zależności od strefy czasowej (Vercel działa w UTC).
 
 ## D4. Rata równa i zaokrąglanie
