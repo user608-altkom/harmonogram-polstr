@@ -135,7 +135,8 @@ function sprawdzParametry(parametry: ParametryKredytu): void {
 
 /**
  * Numer raty, w której dniu odczytujemy wskaźnik dla raty `numer`:
- * POLSTR 1M zmienia się co miesiąc (każda rata), WIBOR 3M co kwartał liczony od pierwszej raty (1, 4, 7, …).
+ * POLSTR 1M zmienia się co miesiąc, więc funkcja zwraca po prostu `numer`;
+ * WIBOR 3M zmienia się co kwartał liczony od pierwszej raty, więc zwraca 1, 4, 7, … (początek kwartału).
  */
 function numerRatyUstalajacejStope(wskaznik: ParametryKredytu['wskaznik'], numer: number): number {
   if (wskaznik === 'WIBOR_3M') return numer - ((numer - 1) % 3);
@@ -148,15 +149,19 @@ export function policzHarmonogram(parametry: ParametryKredytu, seria: WpisSerii[
 
   const raty: Rata[] = [];
   let saldoGr = parametry.kwotaGr;
-  let stopaPoprzedniejRaty: number | undefined;
+  // Wartość wskaźnika z poprzedniej raty; undefined wymusza wyliczenie raty równej w pierwszej iteracji,
+  // więc początkowe 0 w rataRownaGr nigdy nie trafia do wyniku.
+  let wskaznikPoprzedniejRaty: number | undefined;
   let rataRownaGr = 0;
 
   for (let numer = 1; numer <= parametry.liczbaRat; numer++) {
     const dataWskaznika = dataRaty(parametry.pierwszaRata, numerRatyUstalajacejStope(parametry.wskaznik, numer));
-    const stopaRoczna = stopaWskaznikaNaDzien(seria, dataWskaznika) + parametry.marza;
-    if (stopaRoczna !== stopaPoprzedniejRaty) {
+    // Porównujemy wartość wprost z serii (bez arytmetyki), więc zmiana wpisu zawsze wymusza przeliczenie.
+    const wartoscWskaznika = stopaWskaznikaNaDzien(seria, dataWskaznika);
+    const stopaRoczna = wartoscWskaznika + parametry.marza;
+    if (wartoscWskaznika !== wskaznikPoprzedniejRaty) {
       rataRownaGr = rataAnnuitetowa(saldoGr, stopaRoczna, parametry.liczbaRat - numer + 1);
-      stopaPoprzedniejRaty = stopaRoczna;
+      wskaznikPoprzedniejRaty = wartoscWskaznika;
     }
 
     const czescOdsetkowaGr = zaokraglijDoGrosza((saldoGr * stopaRoczna) / MIESIECY_W_ROKU);
