@@ -92,11 +92,11 @@ description: "Lista zadań: kalkulator harmonogramu spłat na POLSTR 1M i WIBOR 
 
 ### Testy historii 3 ⚠️
 
-- [ ] T017 [P] [US3] Test: 400 000 zł, 300 rat malejących, stała stopa 3,55 % + 2,11 pp → część kapitałowa 133333 gr (raty 1–299), ostatnia 133433 gr, pierwsza rata 322000 gr, raty nierosnące, suma kapitału = kwota w tests/raty-malejace.test.ts
+- [X] T017 [P] [US3] Test: 400 000 zł, 300 rat malejących, stała stopa 3,55 % + 2,11 pp → część kapitałowa 133333 gr (raty 1–299), ostatnia 133433 gr, pierwsza rata 322000 gr, raty nierosnące, suma kapitału = kwota w tests/raty-malejace.test.ts
 
 ### Implementacja historii 3
 
-- [ ] T018 [US3] Dodać gałąź rat malejących w `policzHarmonogram` w src/domena/harmonogram.ts
+- [X] T018 [US3] Dodać gałąź rat malejących w `policzHarmonogram` w src/domena/harmonogram.ts
 
 **Punkt kontrolny**: US1–US3 zielone.
 

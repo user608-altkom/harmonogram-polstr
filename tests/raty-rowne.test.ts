@@ -76,7 +76,6 @@ describe('raty równe przy stałej stopie (liczba kontrolna z BRIEF.md)', () => 
     expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, kwotaGr: 0 }, SERIA_STALA)).toThrow('kwota');
     expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, liczbaRat: 2.5 }, SERIA_STALA)).toThrow('liczba rat');
     expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, pierwszaRata: '1999-12-01' }, SERIA_STALA)).toThrow();
-    expect(() => policzHarmonogram({ ...LICZBA_KONTROLNA, typRat: 'malejace' }, SERIA_STALA)).toThrow('typ rat');
   });
 });
 
